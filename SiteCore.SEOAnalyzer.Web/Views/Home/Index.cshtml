@@ -1,0 +1,292 @@
+﻿@{
+    ViewBag.Title = "SEO Analyzer";
+}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-10">
+        <h2>@ViewData["SubTitle"]</h2>
+        <small>@ViewData["Message"]</small>
+    </div>
+    <div class="col-lg-2">
+
+    </div>
+</div>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div class="wrapper wrapper-content animated fadeInRight">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>Web Page URL</h5>
+                        <div class="ibox-tools">
+                            <a class="collapse-link">
+                                <i class="fa fa-chevron-up"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="ibox-content">
+                        <form method="get" class="form-horizontal">
+                            <div class="form-group">
+                                <div class="col-sm-10"><input type="text" id="pageUrl" placeholder="http://" class="form-control"></div>
+                            </div>
+                            <div class="form-group">
+                                &nbsp;
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>Web Page Content</h5>
+                        <div class="ibox-tools">
+                            <a class="collapse-link">
+                                <i class="fa fa-chevron-up"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="ibox-content no-padding">
+
+                        <div id="pageContent" class="summernote">
+                            <h3>Lorem Ipsum is simply</h3>
+                            dummy text of the printing and typesetting industry. <strong>Lorem Ipsum has been the industry's</strong> standard dummy text ever since the 1500s,
+                            when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic
+                            typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with
+                            <br />
+                            <br />
+                            <ul>
+                                <li>Remaining essentially unchanged</li>
+                                <li>Make a type specimen book</li>
+                                <li>Unknown printer</li>
+                            </ul>
+                            <br />
+                            <a href="https://simple.wikipedia.org/wiki/Lorem_ipsum" target="_blank">Learn more</a>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>Analyze</h5>
+                    </div>
+                    <div class="ibox-content">
+
+                        <form method="get" class="form-horizontal">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">Analysis Option</label>
+
+                                <div class="col-sm-10">
+                                    <div class="checkbox i-checks"><label> <input type="checkbox" value="countWords"> <i></i> Count Words Occurences </label></div>
+                                    <div class="checkbox i-checks"><label> <input type="checkbox" value="countMetaTag"> <i></i> Count Meta Tags Keyword Occurences </label></div>
+                                    <div class="checkbox i-checks"><label> <input type="checkbox" value="countExternalLink"> <i></i> Count External Links </label></div>
+                                </div>
+                            </div>
+                            <div class="hr-line-dashed"></div>
+                            <div class="form-group">
+                                <div class="col-sm-4 col-sm-offset-2">
+                                    <button class="btn btn-primary" id="analyze" type="button">Perform Analysis</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>Result</h5>
+                    </div>
+                    <div class="ibox-content">
+                        <div class="jqGrid_wrapper">
+                            <table id="table_list_1"></table>
+                            <div id="pager_list_1"></div>
+                        </div>
+                        <div class="jqGrid_wrapper">
+                            <table id="table_list_2"></table>
+                            <div id="pager_list_2"></div>
+                        </div>
+                        <div class="jqGrid_wrapper">
+                            <table id="table_list_3"></table>
+                            <div id="pager_list_3"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+}
+@section Styles {
+    @Styles.Render("~/plugins/toastrStyles")
+    @Styles.Render("~/Content/plugins/iCheck/iCheckStyles")
+    @Styles.Render("~/plugins/summernoteStyles")
+    @Styles.Render("~/Content/plugins/jqGrid/jqGridStyles")
+}
+
+@section Scripts {
+    @Scripts.Render("~/plugins/iCheck")
+    @Scripts.Render("~/plugins/summernote")
+    @Scripts.Render("~/plugins/jqGrid")
+    @Scripts.Render("~/plugins/toastr")
+
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var options = [];
+
+            $('.i-checks').iCheck({
+                checkboxClass: 'icheckbox_square-green',
+                radioClass: 'iradio_square-green',
+            });
+
+            $('.summernote').summernote();
+
+            $('.i-checks').on('ifChecked', function (event) {
+                options.push(event.target.value);
+            });
+
+            $('.i-checks').on('ifUnchecked', function (event) {
+                var pos = options.indexOf(event.target.value);
+                options.splice(pos, 1);
+
+            });
+
+            $('#analyze').click(function (e) {
+
+                var request = $.ajax({
+                    data:
+                        {
+                            PageUrl: $("#pageUrl").val(),
+                            PageContent: $('.summernote').summernote('code'),
+                            Options: options,
+                        },
+                    datatype: "json",
+                    traditional: true,
+                    method: "POST",
+                    url: "@Url.Action("Analyze", "Home")",
+                    success: function (data) {
+                        if (data.IsSuccess == false) { // has error
+                            toastr.error(data.Error);
+                        }
+                        else {
+                            loadWordCount(data.WordCount);
+                            loadMetaTagCount(data.MetaTagsCount);
+                            loadExternalLink(data.ExternalLinks);
+                            toastr.success("Analysis is completed");
+                        }
+                    },
+                    fail: function () {
+                        toastr.error("Error in sending request to server, please try again later");
+
+                    }
+                });
+            });
+
+            function loadWordCount(wordCountData) {
+                $("#table_list_1").jqGrid({
+                    data: wordCountData,
+                    datatype: "local",
+                    height: 250,
+                    autowidth: true,
+                    shrinkToFit: true,
+                    rowNum: 10,
+                    rowList: [10, 20, 30],
+                    colNames: ['Word', 'Total'],
+                    colModel: [
+                        { name: 'Word', index: 'Word', width: 100 },
+                        { name: 'Total', index: 'Total', sorttype: "int", align: "center" }
+                    ],
+                    caption: "Words Occurences",
+                    pager: "#pager_list_1",
+                    viewrecords: true,
+                    hidegrid: false
+                });
+
+                $("#table_list_1").jqGrid('clearGridData')
+                    .jqGrid('setGridParam', { data: wordCountData })
+                    .trigger('reloadGrid');
+
+                $(window).bind('resize', function () {
+                    var width = $('.jqGrid_wrapper').width();
+                    $('#table_list_1').setGridWidth(width);
+                });
+            }
+
+            function loadMetaTagCount(metaTagsCountData) {
+
+                $("#table_list_2").jqGrid({
+                    data: metaTagsCountData,
+                    datatype: "local",
+                    height: 250,
+                    autowidth: true,
+                    shrinkToFit: true,
+                    rowNum: 10,
+                    rowList: [10, 20, 30],
+                    colNames: ['Word', 'Total'],
+                    colModel: [
+                        { name: 'Word', index: 'Word', width: 100 },
+                        { name: 'Total', index: 'Total', sorttype: "int", align: "center" }
+                    ],
+                    caption: "Meta Tags Occurences",
+                    pager: "#pager_list_2",
+                    viewrecords: true,
+                    hidegrid: false
+                });
+
+                $("#table_list_2").jqGrid('clearGridData')
+                    .jqGrid('setGridParam', { data: metaTagsCountData })
+                    .trigger('reloadGrid');
+
+                $(window).bind('resize', function () {
+                    var width = $('.jqGrid_wrapper').width();
+                    $('#table_list_2').setGridWidth(width);
+                });
+            }
+
+            function loadExternalLink(links) {
+
+                $("#table_list_3").jqGrid({
+                    data: links,
+                    datatype: "local",
+                    height: 250,
+                    autowidth: true,
+                    shrinkToFit: true,
+                    rowNum: 10,
+                    rowList: [10, 20, 30],
+                    colNames: ['Address'],
+                    colModel: [
+                        { name: 'Address', index: 'Address' },
+                    ],
+                    caption: "External Links",
+                    pager: "#pager_list_3",
+                    viewrecords: true,
+                    hidegrid: false
+                });
+
+                $("#table_list_3").jqGrid('clearGridData')
+                    .jqGrid('setGridParam', { data: links })
+                    .trigger('reloadGrid');
+                
+                $(window).bind('resize', function () {
+                    var width = $('.jqGrid_wrapper').width();
+                    $('#table_list_3').setGridWidth(width);
+                });
+            }
+        });
+    </script>
+}
